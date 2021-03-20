@@ -1,20 +1,20 @@
-Fitter Status : Successful - Sat Mar 20 10:33:33 2021
+Fitter Status : Successful - Sat Mar 20 13:52:38 2021
 Quartus Prime Version : 20.1.1 Build 720 11/11/2020 SJ Lite Edition
 Revision Name : DE10_Standard_golden_top
 Top-level Entity Name : DE10_Standard_golden_top
 Family : Cyclone V
 Device : 5CSXFC6D6F31C6
 Timing Models : Final
-Logic utilization (in ALMs) : 1 / 41,910 ( < 1 % )
-Total registers : 0
+Logic utilization (in ALMs) : 449 / 41,910 ( 1 % )
+Total registers : 925
 Total pins : 204 / 499 ( 41 % )
 Total virtual pins : 0
-Total block memory bits : 0 / 5,662,720 ( 0 % )
-Total RAM Blocks : 0 / 553 ( 0 % )
+Total block memory bits : 31,744 / 5,662,720 ( < 1 % )
+Total RAM Blocks : 4 / 553 ( < 1 % )
 Total DSP Blocks : 0 / 112 ( 0 % )
 Total HSSI RX PCSs : 0 / 9 ( 0 % )
 Total HSSI PMA RX Deserializers : 0 / 9 ( 0 % )
 Total HSSI TX PCSs : 0 / 9 ( 0 % )
 Total HSSI PMA TX Serializers : 0 / 9 ( 0 % )
-Total PLLs : 0 / 15 ( 0 % )
+Total PLLs : 2 / 15 ( 13 % )
 Total DLLs : 0 / 4 ( 0 % )

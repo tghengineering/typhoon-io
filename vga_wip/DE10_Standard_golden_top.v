@@ -211,14 +211,100 @@ module DE10_Standard_golden_top(
 //  REG/WIRE declarations
 //=======================================================
 
+wire sys_clk_100M;
+wire sys_clk_1M;
+wire sys_clk_locked;
+wire sys_reset_n = ~SW[9];
+wire sys_active_clk;
 
+wire loopback_mode = SW[8]; // deboune this
 
+wire 			vid_tx_clk;
+wire 			vid_tx_en;
+wire 			vid_tx_hs;
+wire 			vid_tx_vs;
+wire [23:0] vid_tx_data;
+
+assign LEDR[7] = sys_active_clk;
+assign LEDR[8] = sys_clk_locked;
+assign LEDR[9] = ~sys_reset_n;
 
 //=======================================================
 //  Structural coding
 //=======================================================
 
+// Generate 100MHz and 1Mhz system clocks
+sys_pll sys_pll_inst(
+	.refclk(CLOCK_50),   //  refclk.clk
+	.refclk1(CLOCK2_50),
+	.rst(~sys_reset_n),      //   reset.reset
+	.outclk_0(sys_clk_100M), // outclk0.clk
+	.outclk_1(sys_clk_1M),
+	.locked(sys_clk_locked),    //  locked.export
+	.activeclk(sys_active_clk)
+);
+
+// Video mux (from RX or from generated)
+video_selector video_selector_inst(
+	.aclr(~sys_reset_n),
+	.clken(1'b1),
+	.clock(vid_tx_clk),
+	.data0x(27'd0),
+	.data1x(27'd1),
+	.sel(loopback_mode),
+	.result({vid_tx_en, vid_tx_vs, vid_tx_hs, vid_tx_data})
+);
+
+//----------------------------------------------//
+// 			 Video Pattern Generator	  	   	//
+//----------------------------------------------//
+
+reg	[3:0]	vpg_mode;	
+reg			vpg_mode_change;
+wire 	[3:0]	vpg_disp_mode;
+wire 	[1:0]	vpg_disp_color;
+
+wire vpg_pclk;
+wire vpg_de;
+wire vpg_hs;
+wire vpg_vs;
+wire [23:0]	vpg_data;
+
+always @(posedge sys_clk_100M or negedge sys_reset_n)
+begin
+	if (!sys_reset_n)
+	begin
+		vpg_mode <= `VGA_640x480p60;
+		vpg_mode_change <= 1'b1;
+	end
+	else if (vpg_mode_change)
+	begin
+				vpg_mode_change <= 1'b0;
+	end
+end
+
+vpg vpg_inst(
+	.clk_100(sys_clk_100M),
+	.reset_n(sys_reset_n),
+	.mode(vpg_mode),
+	.mode_change(vpg_mode_change),
+	.disp_color(`COLOR_RGB444),       
+	.vpg_pclk(vpg_pclk),
+	.vpg_de(vpg_de),
+	.vpg_hs(vpg_hs),
+	.vpg_vs(vpg_vs),
+	.vpg_r(vpg_data[23:16]),
+	.vpg_g(vpg_data[15:8]),
+	.vpg_b(vpg_data[7:0])
+);
 
 
-
+assign VGA_CLK = vpg_pclk;
+assign VGA_HS = vpg_hs;
+assign VGA_VS = vpg_vs;
+assign VGA_R = vpg_data[23:16];
+assign VGA_G = vpg_data[15:8];
+assign VGA_B = vpg_data[7:0];
+assign VGA_BLANK_N = 1'b1;
+assign VGA_SYNC_N = !(vpg_hs || vpg_vs);
 endmodule

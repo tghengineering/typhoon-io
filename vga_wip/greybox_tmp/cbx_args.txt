@@ -1,0 +1,13 @@
+LPM_PIPELINE=1
+LPM_SIZE=2
+LPM_TYPE=LPM_MUX
+LPM_WIDTH=27
+LPM_WIDTHS=1
+DEVICE_FAMILY="Cyclone V"
+aclr
+clken
+clock
+data
+data
+sel
+result

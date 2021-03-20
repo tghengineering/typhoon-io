@@ -1,0 +1,5 @@
+vpg_pll_reconfig_sim/vpg_pll_reconfig.v
+vpg_pll_reconfig_sim/altera_pll_reconfig/altera_pll_reconfig_top.v
+vpg_pll_reconfig_sim/altera_pll_reconfig/altera_pll_reconfig_mif_reader.v
+vpg_pll_reconfig_sim/altera_pll_reconfig/altera_pll_reconfig_core.v
+vpg_pll_reconfig_sim/altera_pll_reconfig/altera_std_synchronizer.v
