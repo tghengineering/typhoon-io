@@ -114,6 +114,10 @@
 				{
 					"name" : "SW[9]",
 					"strict" : false
+				},
+				{
+					"name" : "KEY[3]",
+					"strict" : false
 				}
 			]
 		}

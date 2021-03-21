@@ -66,14 +66,9 @@ output	[7:0] 	vpg_b;
 
 //============= config sequnce control
 `define CONFIG_NONE							0	
-`define CONFIG_INIT							1
-`define CONFIG_PLL_INT						2
-`define CONFIG_PLL_READ_CONFIG			3
-`define CONFIG_PLL_READ_CONFIG_DONE		4
-`define CONFIG_PLL_UPDATE_CONFIG			5
-`define CONFIG_PLL_UPDATE_CONFIG_DONE	6
-`define CONFIG_PLL_WAIT_STABLE			7
-`define CONFIG_START_VPG  					8
+`define CONFIG_PLL_UPDATE_CONFIG_DONE	1
+`define CONFIG_PLL_WAIT_STABLE			2
+`define CONFIG_START_VPG  					3
 //
 reg	[3:0]	config_state;
 reg	[3:0]	disp_mode;
@@ -84,58 +79,23 @@ always @ (posedge clk_100 or negedge reset_n)
 begin
 	if (!reset_n)
 	begin
-		config_state <= `CONFIG_NONE;
-		//config_state 	<= `CONFIG_INIT;
-		disp_mode 		<= mode;
-		//pll_reconfig 	<= 1'b0;
-		//write_from_rom <= 1'b0;		
-		timing_change 	<= 1'b0;
+		config_state 		<= `CONFIG_NONE;
+		disp_mode 			<= mode;
+		timing_change 		<= 1'b0;
 		timing_change_dur <= 0;
 	end	
 	else if (mode_change)
 	begin
-		config_state 	<= `CONFIG_INIT;
-		disp_mode 		<= mode;
-		//pll_reconfig 	<= 1'b0;
-		//write_from_rom <= 1'b0;
-		timing_change 	<= 1'b0;
+		config_state 		<= `CONFIG_PLL_WAIT_STABLE;
+		disp_mode 			<= mode;
+		timing_change 		<= 1'b0;
 		timing_change_dur <= 0;
-	end
-	else if (config_state == `CONFIG_INIT)
-	begin
-		config_state <= `CONFIG_PLL_INT;
-	end
-	else if (config_state == `CONFIG_PLL_INT)
-	begin
-		//pll_reconfig 	<= 1'b0;
-		//write_from_rom <= 1'b0;
-		config_state 	<= `CONFIG_PLL_READ_CONFIG;
-	end
-	else if (config_state == `CONFIG_PLL_READ_CONFIG) //&& !pll_busy)
-	begin
-		config_state 	<= `CONFIG_PLL_READ_CONFIG_DONE;
-		//write_from_rom <= 1'b1;
-	end
-	else if (config_state == `CONFIG_PLL_READ_CONFIG_DONE) // && !pll_busy)
-	begin
-		config_state 	<= `CONFIG_PLL_UPDATE_CONFIG;
-		//write_from_rom <= 1'b0;
-	end	
-	else if (config_state == `CONFIG_PLL_UPDATE_CONFIG) // && !pll_busy)
-	begin
-		config_state 	<= `CONFIG_PLL_UPDATE_CONFIG_DONE;
-		//pll_reconfig 	<= 1'b1;
-	end	
-	else if (config_state == `CONFIG_PLL_UPDATE_CONFIG_DONE) // && !pll_busy)
-	begin
-		//pll_reconfig 	<= 1'b0;
-		config_state 	<= `CONFIG_PLL_WAIT_STABLE;
 	end		
 	else if (config_state == `CONFIG_PLL_WAIT_STABLE && gen_clk_locked)
 	begin
-		config_state 	<= `CONFIG_START_VPG;
+		config_state 		<= `CONFIG_START_VPG;
 		timing_change_dur <= 3'b111;
-		timing_change 	<= 1'b1;
+		timing_change 		<= 1'b1;
 	end		
 	else if (config_state == `CONFIG_START_VPG)
 	begin
@@ -183,9 +143,9 @@ reg		   frame_interlaced;
 
 always @(posedge clk_100)
 begin
-	if (config_state == `CONFIG_INIT) 
+	if (mode_change) 
 	begin
-	case(disp_mode)
+	case(mode)
 		`VGA_640x480p60: begin  // 640x480@60 25.175 MHZ
 			{h_disp, h_fporch, h_sync, h_bporch} <= {12'd640, 12'd16, 12'd96, 12'd48}; 
 			{v_disp, v_fporch, v_sync, v_bporch} <= {12'd480, 12'd10, 12'd2,  12'd33}; 
@@ -225,7 +185,7 @@ end
 
 
 
-wire pll_rst;
+wire pll_rst = !reset_n;
 wire gen_clk;
 wire gen_clk_locked;
 wire [63:0] reconfig_to_pll;
@@ -239,58 +199,41 @@ vpg_pll vpg_pll_inst (
 	.reconfig_to_pll   (reconfig_to_pll),   //   reconfig_to_pll.reconfig_to_pll
 	.reconfig_from_pll (reconfig_from_pll)  // reconfig_from_pll.reconfig_from_pll
 );
-	
-vpg_pll_reconfig vgp_pll_reconfig_inst(
-		.mgmt_clk(),          //          mgmt_clk.clk
-		.mgmt_reset(),        //        mgmt_reset.reset
-		.mgmt_waitrequest(),  // mgmt_avalon_slave.waitrequest
-		.mgmt_read(),         //                  .read
-		.mgmt_write(),        //                  .write
-		.mgmt_readdata(),     //                  .readdata
-		.mgmt_address(),      //                  .address
-		.mgmt_writedata(),    //                  .writedata
-		.reconfig_to_pll(reconfig_to_pll),   //   reconfig_to_pll.reconfig_to_pll
-		.reconfig_from_pll(reconfig_from_pll)  // reconfig_from_pll.reconfig_from_pll
-	);	
-//================== select PLL reconfigur ROM	
-	
-`define PLL_25		0	
-`define PLL_27		1
-`define PLL_65		2
-`define PLL_108	3
-`define PLL_148	4
-`define PLL_162	5
-	
-reg [2:0]	pllconfig_select;	
 
-always @(posedge clk_100)
-begin
-	if (config_state == `CONFIG_INIT) 
-	begin
-	case(disp_mode)
-		`VGA_640x480p60: 
-			begin  
-				pllconfig_select <= `PLL_25;
-			end
-		`MODE_720x480: 
-			begin  // 720x480@60 27MHZ (VIC=2/3, 480P) 16:9
-				pllconfig_select <= `PLL_27;
-			end
-		`MODE_1024x768: begin //1024x768@60 65MHZ (XGA)
-			pllconfig_select <= `PLL_65;
-		end
-		`MODE_1280x1024: begin //1280x1024@60   108MHZ
-			pllconfig_select <= `PLL_108;
-		end
-		`FHD_1920x1080p60: begin 
-			pllconfig_select <= `PLL_148;
-		end
-		`VESA_1600x1200p60: begin 
-			pllconfig_select <= `PLL_162;
-		end
-	endcase
-	end
-end
+wire 				pll_reconfig_wait_request;
+wire	[8 :0] 	pll_reconfig_addr;  
+wire	[31:0] 	pll_reconfig_write_data; 
+wire 				pll_reconfig_clk;
+wire  			pll_reconfig_clk_en;
+wire  			pll_reconfig_write;
+
+
+verilog_state_machine vpg_pll_cnfg_mngr(
+	.clk(clk_100),
+	.reset_n(reset_n),
+	.clk_en(1'b1),
+	.timing_mode(mode),
+	.timing_mode_change(mode_change),
+	// check the bus signals
+	.pll_reconfig_wait_request(pll_reconfig_wait_request),
+	.pll_reconfig_addr(pll_reconfig_addr),  
+	.pll_reconfig_write_data(pll_reconfig_write_data), 
+	.pll_reconfig_write(pll_reconfig_write)
+);
+
+vpg_pll_reconfig vgp_pll_reconfig_inst(
+	.mgmt_clk(clk_100),          //          mgmt_clk.clk
+	.mgmt_reset(pll_rst),        //        mgmt_reset.reset
+	.mgmt_waitrequest(pll_reconfig_wait_request),  // mgmt_avalon_slave.waitrequest
+	.mgmt_read(1'b0),         //                  .read
+	.mgmt_write(pll_reconfig_write),        //                  .write
+//		.mgmt_readdata(),     //                  .readdata
+	.mgmt_address(pll_reconfig_addr),      //                  .address
+	.mgmt_writedata(pll_reconfig_write_data),    //                  .writedata
+	.reconfig_to_pll(reconfig_to_pll),   //   reconfig_to_pll.reconfig_to_pll
+	.reconfig_from_pll(reconfig_from_pll)  // reconfig_from_pll.reconfig_from_pll
+	);	
+
 
 //============ pattern generator: vga timming generator
 
@@ -344,7 +287,7 @@ wire [7:0]	gen_b;
 
 //convert time: 1-clock 
 pattern_gen pattern_gen_inst(
-	.reset_n(gen_clk_locked & ~timing_change),
+	.reset_n(gen_clk_locked),
 	.pixel_clk(gen_clk),
 	.pixel_de(time_de),
 	.pixel_hs(time_hs),

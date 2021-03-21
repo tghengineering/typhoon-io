@@ -233,6 +233,8 @@ assign LEDR[9] = ~sys_reset_n;
 //  Structural coding
 //=======================================================
 
+
+
 // Generate 100MHz and 1Mhz system clocks
 sys_pll sys_pll_inst(
 	.refclk(CLOCK_50),   //  refclk.clk
@@ -255,33 +257,54 @@ video_selector video_selector_inst(
 	.result({vid_tx_en, vid_tx_vs, vid_tx_hs, vid_tx_data})
 );
 
+//---------------------------------------------------//
+//				Mode Change Button Monitor 			 //
+//---------------------------------------------------//
+wire				mode_button;
+reg				pre_mode_button;
+reg	[15:0]	debounce_cnt;
+reg	[3:0]		vpg_mode;	
+reg				vpg_mode_change;
+
+
+	assign mode_button = ~KEY[3];
+	always@(posedge sys_clk_100M or negedge sys_reset_n)
+		begin
+			if (!sys_reset_n)
+				begin
+					vpg_mode 			<= `VGA_640x480p60;
+					debounce_cnt 		<= 1;
+					vpg_mode_change 	<= 1'b1;
+				end
+			else if (vpg_mode_change)
+				vpg_mode_change <= 1'b0;
+			else if (debounce_cnt)
+				debounce_cnt <= debounce_cnt + 1'b1;
+			else if (mode_button && !pre_mode_button)
+				begin
+					debounce_cnt 		<= 1;
+					vpg_mode_change 	<= 1'b1;
+					if (vpg_mode == `VESA_1600x1200p60)
+						vpg_mode <= `VGA_640x480p60;
+					else
+						vpg_mode <= vpg_mode + 1'b1;
+				end
+		end
+
+	always@(posedge sys_clk_100M)
+		begin
+			pre_mode_button <= mode_button;
+		end
+
 //----------------------------------------------//
 // 			 Video Pattern Generator	  	   	//
 //----------------------------------------------//
-
-reg	[3:0]	vpg_mode;	
-reg			vpg_mode_change;
-wire 	[3:0]	vpg_disp_mode;
-wire 	[1:0]	vpg_disp_color;
 
 wire vpg_pclk;
 wire vpg_de;
 wire vpg_hs;
 wire vpg_vs;
 wire [23:0]	vpg_data;
-
-always @(posedge sys_clk_100M or negedge sys_reset_n)
-begin
-	if (!sys_reset_n)
-	begin
-		vpg_mode <= `VGA_640x480p60;
-		vpg_mode_change <= 1'b1;
-	end
-	else if (vpg_mode_change)
-	begin
-				vpg_mode_change <= 1'b0;
-	end
-end
 
 vpg vpg_inst(
 	.clk_100(sys_clk_100M),

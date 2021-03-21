@@ -1,15 +1,9 @@
 
-State Machine - |DE10_Standard_golden_top|vpg:vpg_inst|config_state
-Name config_state.0111 config_state.0110 config_state.0101 config_state.0100 config_state.0011 config_state.0010 config_state.0001 config_state.0000 config_state.1000 
-config_state.0000 0 0 0 0 0 0 0 0 0 
-config_state.0001 0 0 0 0 0 0 1 1 0 
-config_state.0010 0 0 0 0 0 1 0 1 0 
-config_state.0011 0 0 0 0 1 0 0 1 0 
-config_state.0100 0 0 0 1 0 0 0 1 0 
-config_state.0101 0 0 1 0 0 0 0 1 0 
-config_state.0110 0 1 0 0 0 0 0 1 0 
-config_state.0111 1 0 0 0 0 0 0 1 0 
-config_state.1000 0 0 0 0 0 0 0 1 1 
+State Machine - |DE10_Standard_golden_top|vpg:vpg_inst|vpg_pll_reconfig:vgp_pll_reconfig_inst|altera_pll_reconfig_top:vpg_pll_reconfig_inst|altera_pll_reconfig_core:NM28_reconfig.mif_reconfig.altera_pll_reconfig_core_inst0|current_state
+Name current_state.IDLE current_state.LOCKED current_state.WAIT_ON_LOCK 
+current_state.IDLE 0 0 0 
+current_state.WAIT_ON_LOCK 1 0 1 
+current_state.LOCKED 1 1 0 
 
 State Machine - |DE10_Standard_golden_top|vpg:vpg_inst|vpg_pll_reconfig:vgp_pll_reconfig_inst|altera_pll_reconfig_top:vpg_pll_reconfig_inst|altera_pll_reconfig_core:NM28_reconfig.mif_reconfig.altera_pll_reconfig_core_inst0|current_read_state
 Name current_read_state.READ_POST_WAIT current_read_state.READ current_read_state.READ_WAIT current_read_state.READ_IDLE 
@@ -30,12 +24,6 @@ operation_address.BWCTRL_REG 0 1 0 0 0 0 0 1 0 0
 operation_address.CP_CURRENT_REG 1 0 0 0 0 0 0 1 0 0 
 operation_address.VCO_REG 0 0 0 0 0 0 0 1 0 1 
 operation_address.ANY_DPRIO 0 0 0 0 0 0 0 1 1 0 
-
-State Machine - |DE10_Standard_golden_top|vpg:vpg_inst|vpg_pll_reconfig:vgp_pll_reconfig_inst|altera_pll_reconfig_top:vpg_pll_reconfig_inst|altera_pll_reconfig_core:NM28_reconfig.mif_reconfig.altera_pll_reconfig_core_inst0|current_state
-Name current_state.IDLE current_state.LOCKED current_state.WAIT_ON_LOCK 
-current_state.IDLE 0 0 0 
-current_state.WAIT_ON_LOCK 1 0 1 
-current_state.LOCKED 1 1 0 
 
 State Machine - |DE10_Standard_golden_top|vpg:vpg_inst|vpg_pll_reconfig:vgp_pll_reconfig_inst|altera_pll_reconfig_top:vpg_pll_reconfig_inst|altera_pll_reconfig_core:NM28_reconfig.mif_reconfig.altera_pll_reconfig_core_inst0|dprio_cur_state
 Name dprio_cur_state.DPRIO_DONE dprio_cur_state.TEN dprio_cur_state.NINE dprio_cur_state.EIGHT dprio_cur_state.SEVEN dprio_cur_state.SIX dprio_cur_state.FIVE dprio_cur_state.FOUR dprio_cur_state.THREE dprio_cur_state.TWO dprio_cur_state.ONE dprio_cur_state.DPRIO_IDLE 
@@ -108,6 +96,20 @@ dps_current_state.PHASE_DONE_LOW_2 0 0 0 1 0 1
 dps_current_state.PHASE_DONE_LOW_3 0 0 1 0 0 1 
 dps_current_state.PHASE_DONE_LOW_4 0 1 0 0 0 1 
 dps_current_state.PHASE_DONE_LOW_0 1 0 0 0 0 1 
+
+State Machine - |DE10_Standard_golden_top|vpg:vpg_inst|config_state
+Name config_state.0010 config_state.0000 config_state.0011 
+config_state.0000 0 0 0 
+config_state.0010 1 1 0 
+config_state.0011 0 1 1 
+
+State Machine - |DE10_Standard_golden_top|vpg:vpg_inst|verilog_state_machine:vpg_pll_cnfg_mngr|state
+Name state.CONF_PLL_IN_CHANGE state.CONF_CHANGE_MODE state.CONF_INIT state.CONF_NONE state.CONF_PLL_DONE 
+state.CONF_NONE 0 0 0 0 0 
+state.CONF_INIT 0 0 1 1 0 
+state.CONF_CHANGE_MODE 0 1 0 1 0 
+state.CONF_PLL_IN_CHANGE 1 0 0 1 0 
+state.CONF_PLL_DONE 0 0 0 1 1 
 
 State Machine - |DE10_Standard_golden_top|sys_pll:sys_pll_inst|sys_pll_0002:sys_pll_inst|altera_pll:altera_pll_i|dps_extra_kick:dps_extra_inst|dps_current_state
 Name dps_current_state.PHASE_DONE_LOW_0 dps_current_state.PHASE_DONE_LOW_4 dps_current_state.PHASE_DONE_LOW_3 dps_current_state.PHASE_DONE_LOW_2 dps_current_state.PHASE_DONE_LOW_1 dps_current_state.PHASE_DONE_HIGH 
