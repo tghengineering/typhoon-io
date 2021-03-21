@@ -1,0 +1,10 @@
+
+vga_wip/output_files/
+
+vga_wip/incremental_db/
+
+vga_wip/db/
+
+vga_wip/greybox_tmp/
+
+vga_wip/.qsys_edit/

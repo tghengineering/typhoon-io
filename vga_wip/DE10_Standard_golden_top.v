@@ -266,35 +266,35 @@ reg	[15:0]	debounce_cnt;
 reg	[3:0]		vpg_mode;	
 reg				vpg_mode_change;
 
+wire [9:0] SW_deb;
+wire [3:0] KEY_pressed;
+debounce_wrapper deboucne_wrapper_inst(
+	.clk(sys_clk_100M),
+	.SW(SW),
+	.KEY(KEY),
+	.SW_deb(SW_deb),
+	.KEY_pressed(KEY_pressed)
+);
 
-	assign mode_button = ~KEY[3];
-	always@(posedge sys_clk_100M or negedge sys_reset_n)
-		begin
-			if (!sys_reset_n)
-				begin
-					vpg_mode 			<= `VGA_640x480p60;
-					debounce_cnt 		<= 1;
-					vpg_mode_change 	<= 1'b1;
-				end
-			else if (vpg_mode_change)
-				vpg_mode_change <= 1'b0;
-			else if (debounce_cnt)
-				debounce_cnt <= debounce_cnt + 1'b1;
-			else if (mode_button && !pre_mode_button)
-				begin
-					debounce_cnt 		<= 1;
-					vpg_mode_change 	<= 1'b1;
-					if (vpg_mode == `VESA_1600x1200p60)
-						vpg_mode <= `VGA_640x480p60;
-					else
-						vpg_mode <= vpg_mode + 1'b1;
-				end
-		end
+always@(posedge sys_clk_100M or negedge sys_reset_n)
+	begin
+		if (!sys_reset_n)
+			begin
+				vpg_mode 			<= `VGA_640x480p60;
+				vpg_mode_change 	<= 1'b1;
+			end
+		else if (vpg_mode_change)
+			vpg_mode_change <= 1'b0;
+		else if (KEY_pressed[3])
+			begin
+				vpg_mode_change 	<= 1'b1;
+				if (vpg_mode == `VESA_1600x1200p60)
+					vpg_mode <= `VGA_640x480p60;
+				else
+					vpg_mode <= vpg_mode + 1'b1;
+			end
+	end
 
-	always@(posedge sys_clk_100M)
-		begin
-			pre_mode_button <= mode_button;
-		end
 
 //----------------------------------------------//
 // 			 Video Pattern Generator	  	   	//

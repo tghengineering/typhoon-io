@@ -81,8 +81,8 @@ assign v_group1 = image_height >> 1; //image_height/2;
 assign v_group2 = v_group0 + v_group1; //image_height*3/4;
 
 
-wire 	[7:0]   y_scale;
-assign y_scale = h_scale; //16+h_scale%240;    // 16~255
+//wire 	[7:0]   y_scale;
+//assign y_scale = h_scale; //16+h_scale%240;    // 16~255
 
 
 
